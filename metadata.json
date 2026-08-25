@@ -1,0 +1,6 @@
+{
+  "name": "Electro Mostafa - Lead Page",
+    "description": "High-converting Moroccan order form for Electro Mostafa with direct Google Sheets sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

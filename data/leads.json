@@ -1,0 +1,16 @@
+[
+  {
+    "id": "EM-202608-6487",
+    "date": "24‏/08‏/2026، 05:15 م",
+    "timestamp": 1787591752668,
+    "name": "أحمد المنصوري",
+    "phone": "0661234567",
+    "city": "الدار البيضاء",
+    "address": "حي المعاريف شارع الزرقطوني",
+    "selectedDevice": "🧊 ثلاجة",
+    "deviceId": "fridge",
+    "status": "جديد",
+    "telegramSent": false,
+    "emailSent": true
+  }
+]
