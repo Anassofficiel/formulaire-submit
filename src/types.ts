@@ -15,6 +15,10 @@ export interface LeadFormData {
   phone: string;
   city: string;
   address: string;
+
+  // المنتج الذي كتبه الزبون
+  product?: string;
+
   deviceId?: string;
   deviceName?: string;
   additionalMessage?: string;
