@@ -130,7 +130,6 @@ const leadData: LeadFormData = {
   city: activeCity,
   address: trimmedAddress,
 
-  // المنتج الذي كتبه الزبون
   product: trimmedProduct || 'غير محدد',
 
   deviceId: 'custom',
