@@ -124,15 +124,19 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }
 
     const trimmedProduct = productName.trim();
 
-    const leadData: LeadFormData = {
-      fullName: trimmedName,
-      phone: phoneDigitsOnly,
-      city: activeCity,
-      address: trimmedAddress,
-      deviceId: 'custom',
-      deviceName: trimmedProduct || 'غير محدد',
-      additionalMessage: trimmedProduct || undefined,
-    };
+const leadData: LeadFormData = {
+  fullName: trimmedName,
+  phone: phoneDigitsOnly,
+  city: activeCity,
+  address: trimmedAddress,
+
+  // المنتج الذي كتبه الزبون
+  product: trimmedProduct || 'غير محدد',
+
+  deviceId: 'custom',
+  deviceName: trimmedProduct || 'غير محدد',
+  additionalMessage: trimmedProduct || undefined,
+};
 
     const success = await onSubmitLead(leadData);
     if (!success) {
