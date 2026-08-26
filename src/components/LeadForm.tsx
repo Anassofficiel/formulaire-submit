@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { DeviceOption, LeadFormData } from '../types';
-import { DEVICE_OPTIONS, MOROCCAN_CITIES } from '../config/devices';
-import { DeviceSelector } from './DeviceSelector';
-import { motion, AnimatePresence } from 'motion/react';
+import { LeadFormData } from '../types';
+import { MOROCCAN_CITIES } from '../config/devices';
+import { motion } from 'motion/react';
 
 interface LeadFormProps {
   onSubmitLead: (data: LeadFormData) => Promise<boolean>;
@@ -11,9 +10,7 @@ interface LeadFormProps {
 }
 
 export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }) => {
-  // Product selection initially null or unselected so user chooses first
-  const [selectedDevice, setSelectedDevice] = useState<DeviceOption | null>(null);
-  const [additionalMessage, setAdditionalMessage] = useState('');
+  const [productName, setProductName] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState(MOROCCAN_CITIES[0].split(' ')[0]);
@@ -26,7 +23,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }
     phone?: boolean;
     city?: boolean;
     address?: boolean;
-    device?: boolean;
+    productName?: boolean;
   }>({});
 
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -46,15 +43,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }
   const trimmedAddress = address.trim();
   const isAddressValid = trimmedAddress.length >= 3;
 
-  const isDeviceValid = Boolean(selectedDevice && selectedDevice.id);
-
   // Field error messages
-  const getDeviceError = () => {
-    if (!touched.device && !hasSubmitted) return null;
-    if (!isDeviceValid) return 'يرجى اختيار نوع المنتج أولاً';
-    return null;
-  };
-
   const getNameError = () => {
     if (!touched.fullName && !hasSubmitted) return null;
     if (!trimmedName) return 'الاسم الكامل مطلوب';
@@ -84,13 +73,12 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }
     return null;
   };
 
-  const deviceError = getDeviceError();
   const nameError = getNameError();
   const phoneError = getPhoneError();
   const cityError = getCityError();
   const addressError = getAddressError();
 
-  const handleBlur = (field: 'fullName' | 'phone' | 'city' | 'address' | 'device') => {
+  const handleBlur = (field: 'fullName' | 'phone' | 'city' | 'address' | 'productName') => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
@@ -113,12 +101,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }
     setHasSubmitted(true);
     setErrorMsg(null);
 
-    // Validate in order: Product -> Name -> Phone -> City -> Address
-    if (!isDeviceValid || !selectedDevice) {
-      setErrorMsg('يرجى اختيار نوع المنتج أولاً');
-      return;
-    }
-
+    // Validate in order: Name -> Phone -> City -> Address
     if (!isNameValid) {
       setErrorMsg('يرجى إدخال الاسم الكامل بشكل صحيح');
       return;
@@ -139,14 +122,16 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }
       return;
     }
 
+    const trimmedProduct = productName.trim();
+
     const leadData: LeadFormData = {
       fullName: trimmedName,
       phone: phoneDigitsOnly,
       city: activeCity,
       address: trimmedAddress,
-      deviceId: selectedDevice.id,
-      deviceName: selectedDevice.name,
-      additionalMessage: additionalMessage.trim() || undefined,
+      deviceId: 'custom',
+      deviceName: trimmedProduct || 'غير محدد',
+      additionalMessage: trimmedProduct || undefined,
     };
 
     const success = await onSubmitLead(leadData);
@@ -173,54 +158,30 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }
           </motion.div>
         )}
 
-        {/* 1. Product Selection First */}
-        <DeviceSelector
-          devices={DEVICE_OPTIONS}
-          selectedDeviceId={selectedDevice?.id || ''}
-          onSelectDevice={(dev) => {
-            setSelectedDevice(dev);
-            handleBlur('device');
-          }}
-          errorMessage={deviceError}
-        />
+        {/* 1. Product Type Input (Optional Single Text Input) */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <label htmlFor="productName" className="text-xs sm:text-sm font-bold text-slate-700">
+              اكتب نوع المنتج الذي تريده بالضبط
+            </label>
+            <span className="text-[11px] text-slate-400 font-normal">اختياري</span>
+          </div>
+          <input
+            id="productName"
+            type="text"
+            placeholder="مثال: ثلاجة Samsung أو فران أو ماكينة صابون أو غسالة ماعن أو بلاك..."
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            onBlur={() => handleBlur('productName')}
+            className={`w-full rounded-xl px-4 py-3.5 text-sm transition-all text-right placeholder:text-slate-400 outline-none border ${
+              productName.trim()
+                ? 'border-emerald-500/70 bg-emerald-50/10 text-slate-800'
+                : 'border-slate-200 bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-400/20 text-slate-800'
+            }`}
+          />
+        </div>
 
-        {/* 2. Conditional Additional Message Field (Appears smoothly ONLY when a product is selected) */}
-        <AnimatePresence>
-          {selectedDevice && (
-            <motion.div
-              key="conditional-message-field"
-              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-              animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
-              exit={{ opacity: 0, height: 0, marginTop: 0 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="overflow-hidden flex flex-col gap-1.5"
-            >
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="additionalMessage"
-                  className="text-xs sm:text-sm font-bold text-slate-700"
-                >
-                  اكتب لنا تفاصيل المنتج الذي تريده بالضبط (اختياري)
-                </label>
-                <span className="text-[10px] text-slate-400 font-normal">اختياري</span>
-              </div>
-              <textarea
-                id="additionalMessage"
-                rows={3}
-                placeholder="مثال: أريد ثلاجة Samsung، الحجم أو اللون أو أي تفاصيل إضافية..."
-                value={additionalMessage}
-                onChange={(e) => setAdditionalMessage(e.target.value)}
-                className={`w-full rounded-xl px-4 py-3 text-sm transition-all text-right placeholder:text-slate-400 placeholder:font-normal outline-none border resize-none ${
-                  additionalMessage.trim()
-                    ? 'border-emerald-500/70 bg-emerald-50/10 text-slate-800'
-                    : 'border-slate-200 bg-slate-50 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-400/20 text-slate-800'
-                }`}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* 3. Customer Contact Info: Full Name & Phone Number */}
+        {/* 2. Customer Contact Info: Full Name & Phone Number */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
           {/* Full Name */}
           <div className="flex flex-col gap-1.5">
@@ -304,7 +265,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }
           </div>
         </div>
 
-        {/* 4. City Selection */}
+        {/* 3. City Selection */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <label htmlFor="city" className="text-xs font-bold text-slate-700">
@@ -384,7 +345,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }
           )}
         </div>
 
-        {/* 5. Full Address (Required) directly below City */}
+        {/* 4. Full Address (Required) directly below City */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <label htmlFor="address" className="text-xs font-bold text-slate-700">
@@ -418,21 +379,6 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmitLead, isSubmitting }
             </p>
           )}
         </div>
-
-        {/* Selected Product Summary Reminder */}
-        {selectedDevice && (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-slate-500">المنتج المحدد:</span>
-              <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
-                {selectedDevice.name}
-              </span>
-            </div>
-            <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              الدفع عند الاستلام
-            </span>
-          </div>
-        )}
 
         {/* Submit Button */}
         <div className="pt-2">

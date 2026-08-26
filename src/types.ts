@@ -15,8 +15,8 @@ export interface LeadFormData {
   phone: string;
   city: string;
   address: string;
-  deviceId: string;
-  deviceName: string;
+  deviceId?: string;
+  deviceName?: string;
   additionalMessage?: string;
   notes?: string;
 }

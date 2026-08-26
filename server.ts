@@ -110,10 +110,10 @@ app.post('/api/leads', async (req, res) => {
   try {
     const { fullName, phone, city, address, deviceName, deviceId, additionalMessage } = req.body;
 
-    if (!fullName || !phone || !city || !deviceName) {
+    if (!fullName || !phone || !city) {
       return res.status(400).json({
         success: false,
-        error: 'جميع الحقول المطلوبة يجب ملؤها (الاسم، الهاتف، المدينة، نوع المنتج)',
+        error: 'جميع الحقول المطلوبة يجب ملؤها (الاسم، الهاتف، المدينة)',
       });
     }
 
@@ -130,6 +130,8 @@ app.post('/api/leads', async (req, res) => {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const leadId = `EM-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}-${randomSuffix}`;
 
+    const productText = deviceName ? String(deviceName).trim() : (additionalMessage ? String(additionalMessage).trim() : 'غير محدد');
+
     const newLead = {
       id: leadId,
       date: formattedDate,
@@ -138,7 +140,7 @@ app.post('/api/leads', async (req, res) => {
       phone: String(phone).trim(),
       city: String(city).trim(),
       address: address ? String(address).trim() : '',
-      selectedDevice: String(deviceName).trim(),
+      selectedDevice: productText,
       deviceId: String(deviceId || ''),
       additionalMessage: additionalMessage ? String(additionalMessage).trim() : '',
       status: 'New Order',
