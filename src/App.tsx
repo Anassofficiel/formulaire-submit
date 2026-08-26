@@ -24,13 +24,13 @@ export default function App() {
   const handleSubmitLead = async (formData: LeadFormData): Promise<boolean> => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(import.meta.env.VITE_GOOGLE_SHEET_WEBAPP_URL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'text/plain;charset=utf-8',
+  },
+  body: JSON.stringify(formData),
+});
 
       const data: LeadSubmissionResponse = await response.json();
 
