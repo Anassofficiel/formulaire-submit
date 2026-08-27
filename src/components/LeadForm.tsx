@@ -137,10 +137,15 @@ const leadData: LeadFormData = {
   additionalMessage: trimmedProduct || undefined,
 };
 
-    const success = await onSubmitLead(leadData);
-    if (!success) {
-      setErrorMsg('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى');
-    }
+  const success = await onSubmitLead(leadData);
+
+if (success) {
+  if (window.fbq) {
+    window.fbq('track', 'Lead');
+  }
+} else {
+  setErrorMsg('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى');
+}
   };
 
   return (
